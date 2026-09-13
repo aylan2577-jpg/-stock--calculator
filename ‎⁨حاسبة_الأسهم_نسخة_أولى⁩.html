@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حاسبة الأسهم Stock Calculator | Profit & Loss</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#f5f7fb;color:#172033}
+header{background:linear-gradient(135deg,#152a4a,#2563a8);color:#fff;padding:42px 20px 70px;text-align:center}
+header h1{margin:0 0 10px;font-size:34px}header p{margin:0;opacity:.9;font-size:17px}
+.wrap{max-width:980px;margin:-35px auto 50px;padding:0 16px}
+.card{background:#fff;border-radius:20px;box-shadow:0 10px 35px #17203318;padding:26px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+label{display:block;font-weight:700;margin-bottom:7px}input{width:100%;padding:13px;border:1px solid #d9deea;border-radius:12px;font-size:16px;outline:none}input:focus{border-color:#2563a8}
+button{width:100%;border:0;border-radius:12px;padding:14px;background:#2563a8;color:white;font-size:17px;font-weight:800;cursor:pointer;margin-top:18px}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.result{background:#f4f7fb;border-radius:14px;padding:17px;text-align:center}.result small{display:block;color:#657085}.result strong{display:block;font-size:24px;margin-top:5px}
+.profit{color:#16834b}.loss{color:#c43d3d}
+.note{font-size:13px;color:#687386;line-height:1.7;margin-top:16px}
+.links{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.link{padding:18px;border:1px solid #e1e6ef;border-radius:14px}
+footer{text-align:center;color:#7a8494;padding:25px;font-size:13px}
+@media(max-width:700px){.grid,.results,.links{grid-template-columns:1fr}header h1{font-size:28px}}
+
+.lang{display:flex;justify-content:center;gap:8px;margin-bottom:16px}.lang button{width:auto;margin:0;padding:7px 13px;background:#ffffff22;border:1px solid #ffffff55;font-size:13px}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:20px}.tab{white-space:nowrap;width:auto;margin:0;background:#eef3f9;color:#23466d;font-size:14px;padding:11px 15px}.tab.active{background:#2563a8;color:#fff}
+.calcbox{display:none}.calcbox.active{display:block}.hint{background:#f7f9fc;border-radius:12px;padding:12px;font-size:13px;color:#687386;margin-top:14px}
+@media(max-width:700px){.tabs{padding-bottom:4px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="lang"><button onclick="setLang('ar')">العربية</button><button onclick="setLang('en')">English</button></div>
+  <h1 id="brand">حاسبة الأسهم <span>Stock Calculator</span></h1>
+  <p id="tagline">احسبي ربحك أو خسارتك في ثوانٍ — مجانًا</p>
+</header>
+<main class="wrap">
+<section class="card">
+  <div class="tabs">
+    <button class="tab active" onclick="showCalc('pl',this)" data-ar="ربح وخسارة" data-en="Profit & Loss">ربح وخسارة</button>
+    <button class="tab" onclick="showCalc('avg',this)" data-ar="متوسط السعر" data-en="Average Price">متوسط السعر</button>
+    <button class="tab" onclick="showCalc('target',this)" data-ar="السعر المستهدف" data-en="Target Price">السعر المستهدف</button>
+    <button class="tab" onclick="showCalc('div',this)" data-ar="التوزيعات" data-en="Dividends">التوزيعات</button>
+    <button class="tab" onclick="showCalc('pos',this)" data-ar="حجم الصفقة" data-en="Position Size">حجم الصفقة</button>
+  </div>
+
+  <div id="pl" class="calcbox active">
+    <h2 data-ar="حاسبة ربح وخسارة الأسهم" data-en="Stock Profit & Loss Calculator">حاسبة ربح وخسارة الأسهم</h2>
+    <div class="grid">
+      <div><label data-ar="سعر شراء السهم" data-en="Purchase price">سعر شراء السهم</label><input id="buy" type="number" min="0" step="0.0001" placeholder="100"></div>
+      <div><label data-ar="عدد الأسهم" data-en="Number of shares">عدد الأسهم</label><input id="qty" type="number" min="0" step="1" placeholder="50"></div>
+      <div><label data-ar="السعر الحالي / البيع" data-en="Current / selling price">السعر الحالي / البيع</label><input id="sell" type="number" min="0" step="0.0001" placeholder="125"></div>
+      <div><label data-ar="العمولة (اختياري)" data-en="Commission (optional)">العمولة (اختياري)</label><input id="fee" type="number" min="0" step="0.01" placeholder="15"></div>
+    </div>
+    <button onclick="calc()" data-ar="احسبي الربح والخسارة" data-en="Calculate Profit & Loss">احسبي الربح والخسارة</button>
+    <div class="results">
+      <div class="result"><small data-ar="إجمالي الشراء" data-en="Total cost">إجمالي الشراء</small><strong id="cost">—</strong></div>
+      <div class="result"><small data-ar="القيمة الحالية" data-en="Current value">القيمة الحالية</small><strong id="value">—</strong></div>
+      <div class="result"><small data-ar="الربح / الخسارة" data-en="Profit / Loss">الربح / الخسارة</small><strong id="profit">—</strong></div>
+      <div class="result"><small data-ar="النسبة" data-en="Return">النسبة</small><strong id="pct">—</strong></div>
+      <div class="result"><small data-ar="سعر التعادل" data-en="Break-even price">سعر التعادل</small><strong id="break">—</strong></div>
+      <div class="result"><small data-ar="ربح السهم" data-en="Profit per share">ربح السهم</small><strong id="per">—</strong></div>
+    </div>
+  </div>
+
+  <div id="avg" class="calcbox">
+    <h2 data-ar="حاسبة متوسط سعر السهم" data-en="Average Share Price Calculator">حاسبة متوسط سعر السهم</h2>
+    <div class="grid">
+      <div><label data-ar="سعر الشراء الأول" data-en="First purchase price">سعر الشراء الأول</label><input id="a1" type="number" step="0.0001"></div>
+      <div><label data-ar="عدد الأسهم الأول" data-en="First share count">عدد الأسهم الأول</label><input id="q1" type="number"></div>
+      <div><label data-ar="سعر الشراء الثاني" data-en="Second purchase price">سعر الشراء الثاني</label><input id="a2" type="number" step="0.0001"></div>
+      <div><label data-ar="عدد الأسهم الثاني" data-en="Second share count">عدد الأسهم الثاني</label><input id="q2" type="number"></div>
+    </div>
+    <button onclick="avgCalc()" data-ar="احسبي المتوسط" data-en="Calculate average">احسبي المتوسط</button>
+    <div class="results"><div class="result"><small data-ar="إجمالي الأسهم" data-en="Total shares">إجمالي الأسهم</small><strong id="avgq">—</strong></div><div class="result"><small data-ar="متوسط السعر" data-en="Average price">متوسط السعر</small><strong id="avgp">—</strong></div><div class="result"><small data-ar="إجمالي التكلفة" data-en="Total cost">إجمالي التكلفة</small><strong id="avgcost">—</strong></div></div>
+  </div>
+
+  <div id="target" class="calcbox">
+    <h2 data-ar="حاسبة السعر المستهدف" data-en="Target Price Calculator">حاسبة السعر المستهدف</h2>
+    <div class="grid">
+      <div><label data-ar="سعر الشراء" data-en="Purchase price">سعر الشراء</label><input id="tbuy" type="number" step="0.0001"></div>
+      <div><label data-ar="عدد الأسهم" data-en="Number of shares">عدد الأسهم</label><input id="tqty" type="number"></div>
+      <div><label data-ar="الربح المطلوب %" data-en="Desired return %">الربح المطلوب %</label><input id="tpercent" type="number" step="0.1" placeholder="20"></div>
+      <div><label data-ar="العمولة" data-en="Commission">العمولة</label><input id="tfee" type="number" step="0.01"></div>
+    </div>
+    <button onclick="targetCalc()" data-ar="احسبي السعر المستهدف" data-en="Calculate target price">احسبي السعر المستهدف</button>
+    <div class="results"><div class="result"><small data-ar="السعر المستهدف" data-en="Target price">السعر المستهدف</small><strong id="targetp">—</strong></div><div class="result"><small data-ar="الربح المطلوب" data-en="Target profit">الربح المطلوب</small><strong id="targetprofit">—</strong></div></div>
+  </div>
+
+  <div id="div" class="calcbox">
+    <h2 data-ar="حاسبة أرباح التوزيعات" data-en="Dividend Income Calculator">حاسبة أرباح التوزيعات</h2>
+    <div class="grid">
+      <div><label data-ar="عدد الأسهم" data-en="Number of shares">عدد الأسهم</label><input id="dqty" type="number"></div>
+      <div><label data-ar="التوزيع لكل سهم" data-en="Dividend per share">التوزيع لكل سهم</label><input id="dps" type="number" step="0.0001"></div>
+      <div><label data-ar="سعر السهم" data-en="Share price">سعر السهم</label><input id="dprice" type="number" step="0.0001"></div>
+    </div>
+    <button onclick="divCalc()" data-ar="احسبي التوزيعات" data-en="Calculate dividends">احسبي التوزيعات</button>
+    <div class="results"><div class="result"><small data-ar="إجمالي التوزيعات" data-en="Total dividends">إجمالي التوزيعات</small><strong id="divtotal">—</strong></div><div class="result"><small data-ar="العائد النقدي %" data-en="Dividend yield %">العائد النقدي %</small><strong id="divyield">—</strong></div></div>
+  </div>
+
+  <div id="pos" class="calcbox">
+    <h2 data-ar="حاسبة حجم الصفقة" data-en="Position Size Calculator">حاسبة حجم الصفقة</h2>
+    <div class="grid">
+      <div><label data-ar="رأس المال" data-en="Account size">رأس المال</label><input id="pcapital" type="number"></div>
+      <div><label data-ar="نسبة المخاطرة %" data-en="Risk %">نسبة المخاطرة %</label><input id="prisk" type="number" step="0.1" placeholder="2"></div>
+      <div><label data-ar="سعر الدخول" data-en="Entry price">سعر الدخول</label><input id="pentry" type="number" step="0.0001"></div>
+      <div><label data-ar="سعر وقف الخسارة" data-en="Stop loss price">سعر وقف الخسارة</label><input id="pstop" type="number" step="0.0001"></div>
+    </div>
+    <button onclick="posCalc()" data-ar="احسبي حجم الصفقة" data-en="Calculate position size">احسبي حجم الصفقة</button>
+    <div class="results"><div class="result"><small data-ar="المبلغ المعرض للخطر" data-en="Amount at risk">المبلغ المعرض للخطر</small><strong id="riskamt">—</strong></div><div class="result"><small data-ar="عدد الأسهم المقترح" data-en="Suggested shares">عدد الأسهم المقترح</small><strong id="posqty">—</strong></div><div class="result"><small data-ar="قيمة الصفقة" data-en="Position value">قيمة الصفقة</small><strong id="posval">—</strong></div></div>
+    <div class="hint" data-ar="هذه أداة لإدارة المخاطر وليست توصية بشراء أو بيع سهم." data-en="This is a risk-management tool, not a recommendation to buy or sell a stock.">هذه أداة لإدارة المخاطر وليست توصية بشراء أو بيع سهم.</div>
+  </div>
+  <div class="note" data-ar="الحسابات تقديرية. قد تختلف النتيجة الفعلية حسب الرسوم والضرائب وقواعد السوق." data-en="Calculations are estimates. Actual results may vary based on fees, taxes and market rules.">الحسابات تقديرية. قد تختلف النتيجة الفعلية حسب الرسوم والضرائب وقواعد السوق.</div>
+</section>
+
+<section class="card">
+<h2 data-ar="أدوات مفيدة للمستثمر" data-en="Useful Investor Tools">أدوات مفيدة للمستثمر</h2>
+<div class="links">
+  <div class="link"><b data-ar="حاسبة الربح والخسارة" data-en="Profit & Loss Calculator">حاسبة الربح والخسارة</b><br><span class="note" data-ar="اعرفي كم ربحتِ أو خسرتِ من استثمارك." data-en="See how much you gained or lost on your investment.">اعرفي كم ربحتِ أو خسرتِ من استثمارك.</span></div>
+  <div class="link"><b data-ar="متوسط سعر السهم" data-en="Average Share Price">متوسط سعر السهم</b><br><span class="note" data-ar="احسبي متوسط تكلفة مشترياتك." data-en="Calculate your average cost.">احسبي متوسط تكلفة مشترياتك.</span></div>
+  <div class="link"><b data-ar="أرباح التوزيعات" data-en="Dividend Income">أرباح التوزيعات</b><br><span class="note" data-ar="احسبي دخلك من توزيعات الأسهم." data-en="Estimate income from dividends.">احسبي دخلك من توزيعات الأسهم.</span></div>
+</div>
+</section>
+</main>
+<footer>حاسبة الأسهم — نسخة تجريبية أولى</footer>
+<script>
+let lang='ar';
+function money(n){return n.toLocaleString(lang==='ar'?'ar-SA':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+(lang==='ar'?' ريال':' SAR')}
+function setLang(l){
+ lang=l; document.documentElement.lang=l; document.documentElement.dir=l==='ar'?'rtl':'ltr';
+ document.querySelectorAll('[data-ar]').forEach(el=>el.textContent=el.dataset[l]);
+ document.getElementById('tagline').textContent=l==='ar'?'احسبي ربحك أو خسارتك في ثوانٍ — مجانًا':'Calculate your stock profit or loss in seconds — Free';
+}
+function showCalc(id,btn){document.querySelectorAll('.calcbox').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function calc(){
+ const buy=+buyEl('buy'),qty=+buyEl('qty'),sell=+buyEl('sell'),fee=+buyEl('fee'),cost=buy*qty,value=sell*qty,p=value-cost-fee,pct=cost?p/cost*100:0;
+ setText('cost',money(cost));setText('value',money(value));setText('profit',money(p));setText('pct',pct.toFixed(2)+'%');setText('break',money(qty?(cost+fee)/qty:0));setText('per',money(qty?p/qty:0));
+ document.getElementById('profit').className=p>=0?'profit':'loss';document.getElementById('pct').className=p>=0?'profit':'loss';
+}
+function avgCalc(){let a1=+buyEl('a1'),q1=+buyEl('q1'),a2=+buyEl('a2'),q2=+buyEl('q2'),q=q1+q2;setText('avgq',q.toLocaleString());setText('avgp',money(q?(a1*q1+a2*q2)/q:0));setText('avgcost',money(a1*q1+a2*q2))}
+function targetCalc(){let b=+buyEl('tbuy'),q=+buyEl('tqty'),r=+buyEl('tpercent')/100,f=+buyEl('tfee'),p=b*q*(1+r)+f;setText('targetp',money(q?p/q:0));setText('targetprofit',money(b*q*r))}
+function divCalc(){let q=+buyEl('dqty'),d=+buyEl('dps'),p=+buyEl('dprice'),total=q*d,y=p?(d/p*100):0;setText('divtotal',money(total));setText('divyield',y.toFixed(2)+'%')}
+function posCalc(){let c=+buyEl('pcapital'),r=+buyEl('prisk')/100,e=+buyEl('pentry'),s=+buyEl('pstop'),risk=c*r,per=Math.abs(e-s),q=per?Math.floor(risk/per):0;setText('riskamt',money(risk));setText('posqty',q.toLocaleString());setText('posval',money(q*e))}
+function buyEl(id){return document.getElementById(id).value||0}
+function setText(id,v){document.getElementById(id).textContent=v}
+</script>
+</body>
+</html>
